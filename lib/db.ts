@@ -9,6 +9,10 @@ if (!config.databaseUrl) {
 
 const sql = neon(config.databaseUrl)
 
+// ✅ Named export (fixes your build error)
+export { sql }
+
+// Query multiple rows
 export async function query<T>(
   strings: TemplateStringsArray,
   ...values: any[]
@@ -22,6 +26,7 @@ export async function query<T>(
   }
 }
 
+// Query single row
 export async function queryOne<T>(
   strings: TemplateStringsArray,
   ...values: any[]
@@ -30,4 +35,5 @@ export async function queryOne<T>(
   return results.length > 0 ? results[0] : null
 }
 
+// Optional default export (safe to keep)
 export default sql
