@@ -31,7 +31,7 @@
 - **Added**: `openai` for AI threat explanations
 - **Added**: `iron-session` for secure session management
 - **Added**: `bcryptjs` for password hashing
-- **Added**: `@neondatabase/serverless` for Neon integration
+- **Added**: `from '@/lib/db'` for Neon integration
 - **File**: `/package.json`
 
 ### Layout Issues

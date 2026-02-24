@@ -421,7 +421,7 @@ This is a **production-ready** full-stack cyber risk assessment platform built f
 
 **Database:**
 - Neon PostgreSQL
-- @neondatabase/serverless
+- from '@/lib/db'
 
 **AI/ML:**
 - OpenAI GPT-4

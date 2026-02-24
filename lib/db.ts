@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless'
+import { neon } from 'from '@/lib/db''
 import { getConfig } from './config'
 
 const config = getConfig()

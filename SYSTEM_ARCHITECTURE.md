@@ -53,7 +53,7 @@ Risk Score = (Exposure × Impact × Likelihood) / 100
 
 ### 3. Data Access Layer
 
-**Technology:** Neon PostgreSQL via @neondatabase/serverless
+**Technology:** Neon PostgreSQL via from '@/lib/db'
 
 **Data Flow:**
 ```
@@ -195,7 +195,7 @@ Organization (via Neon Auth)
 
 ### SQL Injection Prevention
 - Parameterized queries throughout
-- @neondatabase/serverless handles escaping
+- from '@/lib/db' handles escaping
 - No string concatenation in queries
 
 ### Cross-Site Scripting (XSS)

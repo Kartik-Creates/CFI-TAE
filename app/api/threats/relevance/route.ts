@@ -1,5 +1,5 @@
 import { getSession } from '@/lib/session';
-import { sql } from '@neondatabase/serverless';
+import { sql } from 'from '@/lib/db'';
 import { calculateThreatRelevance } from '@/lib/huggingface';
 import { NextRequest, NextResponse } from 'next/server';
 
