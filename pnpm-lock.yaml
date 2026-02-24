@@ -11,7 +11,7 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.71.2(react@19.2.4))
-      '@neondatabase/serverless':
+      'from '@/lib/db'':
         specifier: 0.9.3
         version: 0.9.3
       '@radix-ui/react-accordion':
@@ -398,7 +398,7 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@neondatabase/serverless@0.9.3':
+  'from '@/lib/db'@0.9.3':
     resolution: {integrity: sha512-6ZBK8asl2Z3+ADEaELvbaVVGVlmY1oAzkxxZfpmXPKFuJhbDN+5fU3zYBamsahS/Ch1zE+CVWB3R+8QEI2LMSw==}
 
   '@next/env@16.1.6':
@@ -2127,7 +2127,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@neondatabase/serverless@0.9.3':
+  'from '@/lib/db'@0.9.3':
     dependencies:
       '@types/pg': 8.11.6
 
