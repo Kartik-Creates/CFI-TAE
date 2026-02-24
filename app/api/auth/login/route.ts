@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserByEmail, verifyPassword, getUserOrganizations } from '@/lib/auth'
-import { createSession, getCurrentOrganizationId } from '@/lib/session'
+import { getUserByEmail, verifyUserPassword, getUserOrganizations } from '@/lib/auth'
+import { createSession } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,9 +23,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify password - Note: this is a placeholder
-    // In production, you would store password hash and verify it
-    const passwordMatch = await verifyPassword(password, user.password_hash || '')
+    // Verify password
+    const passwordMatch = await verifyUserPassword(email, password)
     if (!passwordMatch) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
         user: {
           id: user.id,
           email: user.email,
-          fullName: user.full_name,
+          fullName: user.name,
         },
         organizationId: selectedOrgId,
       },

@@ -1,10 +1,13 @@
 import { neon } from '@neondatabase/serverless'
+import { getConfig } from './config'
 
-if (!process.env.DATABASE_URL) {
+const config = getConfig()
+
+if (!config.databaseUrl) {
   throw new Error('DATABASE_URL environment variable is not set')
 }
 
-const sql = neon(process.env.DATABASE_URL)
+const sql = neon(config.databaseUrl)
 
 export async function query<T>(
   strings: TemplateStringsArray,

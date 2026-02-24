@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         user: {
           id: session.userId,
           email: session.email,
-          fullName: user?.full_name || '',
+          fullName: user?.name || '',
           organizationId: session.organizationId,
         },
       },

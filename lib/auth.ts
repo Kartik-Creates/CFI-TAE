@@ -5,9 +5,9 @@ import crypto from 'crypto'
 export interface User {
   id: string
   email: string
-  password_hash: string
-  full_name: string
-  created_at: string
+  name: string
+  createdAt: string
+  role?: string
 }
 
 export interface Organization {
@@ -36,6 +36,28 @@ export async function verifyPassword(
 }
 
 /**
+ * Verify user password from account table
+ */
+export async function verifyUserPassword(
+  email: string,
+  password: string
+): Promise<boolean> {
+  try {
+    const account = await queryOne<any>`
+      SELECT a.password
+      FROM neon_auth.account a
+      JOIN neon_auth.user u ON a."userId" = u.id
+      WHERE u.email = ${email}
+    `
+    if (!account || !account.password) return false
+    return bcrypt.compare(password, account.password)
+  } catch (error) {
+    console.error('[v0] Error verifying user password:', error)
+    return false
+  }
+}
+
+/**
  * Create a new user (for cyber risk system)
  */
 export async function createUser(
@@ -44,27 +66,36 @@ export async function createUser(
   fullName: string,
   organizationId: string
 ): Promise<User> {
-  const passwordHash = await hashPassword(password)
   const userId = crypto.randomUUID()
+  const passwordHash = await hashPassword(password)
 
+  // Create user in Stack Auth schema
   await query`
     INSERT INTO neon_auth.user (
-      id, email, email_verified, created_at, updated_at
+      id, email, name, "emailVerified", "createdAt", "updatedAt"
     )
     VALUES (
-      ${userId}, ${email}, false, NOW(), NOW()
+      ${userId}, ${email}, ${fullName}, false, NOW(), NOW()
     )
   `
 
-  // Insert additional user profile in cyber_risk schema if needed
-  // For now, the basic user is created in neon_auth
+  // Store password in account table
+  await query`
+    INSERT INTO neon_auth.account (
+      id, "userId", password, "providerId", "createdAt", "updatedAt"
+    )
+    VALUES (
+      ${crypto.randomUUID()}, ${userId}, ${passwordHash}, 'password', NOW(), NOW()
+    )
+  `.catch(() => {
+    // Account may already exist
+  })
 
   return {
     id: userId,
     email,
-    password_hash: passwordHash,
-    full_name: fullName,
-    created_at: new Date().toISOString(),
+    name: fullName,
+    createdAt: new Date().toISOString(),
   }
 }
 
@@ -73,7 +104,7 @@ export async function createUser(
  */
 export async function getUserByEmail(email: string): Promise<User | null> {
   const user = await queryOne<User>`
-    SELECT id, email, password_hash, full_name, created_at
+    SELECT id, email, name, "createdAt", role
     FROM neon_auth.user
     WHERE email = ${email}
   `
@@ -85,7 +116,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
  */
 export async function getUserById(userId: string): Promise<User | null> {
   const user = await queryOne<User>`
-    SELECT id, email, password_hash, full_name, created_at
+    SELECT id, email, name, "createdAt", role
     FROM neon_auth.user
     WHERE id = ${userId}
   `
@@ -100,13 +131,14 @@ export async function createOrganization(
   createdById: string
 ): Promise<Organization> {
   const orgId = crypto.randomUUID()
+  const slug = name.toLowerCase().replace(/\s+/g, '-')
 
   await query`
     INSERT INTO neon_auth.organization (
-      id, name, created_at, updated_at
+      id, name, slug, "createdAt"
     )
     VALUES (
-      ${orgId}, ${name}, NOW(), NOW()
+      ${orgId}, ${name}, ${slug}, NOW()
     )
   `
 
@@ -125,7 +157,7 @@ export async function getOrganizationById(
   orgId: string
 ): Promise<Organization | null> {
   const org = await queryOne<Organization>`
-    SELECT id, name, created_at
+    SELECT id, name, "createdAt" as created_at
     FROM neon_auth.organization
     WHERE id = ${orgId}
   `
@@ -141,27 +173,33 @@ export async function linkUserToOrganization(
   role: string = 'member'
 ): Promise<void> {
   await query`
-    INSERT INTO neon_auth.organization_user (
-      organization_id, user_id, role, created_at
+    INSERT INTO neon_auth.member (
+      id, "organizationId", "userId", role, "createdAt"
     )
     VALUES (
-      ${organizationId}, ${userId}, ${role}, NOW()
+      ${crypto.randomUUID()}, ${organizationId}, ${userId}, ${role}, NOW()
     )
-    ON CONFLICT (organization_id, user_id) DO UPDATE
-    SET role = ${role}
-  `
+    ON CONFLICT DO NOTHING
+  `.catch(() => {
+    // Member may already exist
+  })
 }
 
 /**
  * Get user organizations
  */
 export async function getUserOrganizations(userId: string): Promise<Organization[]> {
-  const orgs = await query<Organization>`
-    SELECT o.id, o.name, o.created_at
+  const orgs = await query<any>`
+    SELECT o.id, o.name, o."createdAt" as created_at
     FROM neon_auth.organization o
-    JOIN neon_auth.organization_user ou ON o.id = ou.organization_id
-    WHERE ou.user_id = ${userId}
-    ORDER BY o.created_at DESC
+    JOIN neon_auth.member m ON o.id = m."organizationId"
+    WHERE m."userId" = ${userId}
+    ORDER BY o."createdAt" DESC
   `
-  return orgs
+  return orgs.map(o => ({
+    id: o.id,
+    name: o.name,
+    created_at: o.created_at,
+    created_by: '',
+  }))
 }
